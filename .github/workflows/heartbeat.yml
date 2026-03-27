@@ -1,0 +1,35 @@
+name: Heartbeat Status Email
+
+on:
+  # Run every 4 hours
+  schedule:
+    - cron: '0 */4 * * *'
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  send-heartbeat:
+    name: Send 4-hour status summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    permissions:
+      actions: read   # needed to read workflow run history
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Send heartbeat email
+        env:
+          GMAIL_ADDRESS:      ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GITHUB_TOKEN:       ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:  ${{ github.repository }}
+        run: python heartbeat.py
